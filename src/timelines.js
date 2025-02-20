@@ -82,6 +82,7 @@ export default Kapsule({
                   group: group,
                   label: rawData[i].data[j].label,
                   timeRange: timeRange.map(d => new Date(d)),
+                  tooltipData: rawData[i].data[j].tooltipData,
                   val,
                   labelVal: labelVal !== undefined ? labelVal : val,
                   data: rawData[i].data[j].data[k]
@@ -490,10 +491,16 @@ export default Kapsule({
 
           const normVal = state.zColorScale.domain()[state.zColorScale.domain().length-1] - state.zColorScale.domain()[0];
           const dateFormat = (state.useUtc ? d3UtcFormat : d3TimeFormat)(`${state.timeFormat}${state.useUtc?' (UTC)':''}`);
-          return '<strong>' + d.labelVal + ' </strong>' + state.zDataLabel
-            + (normVal?' (<strong>' + Math.round((d.val-state.zColorScale.domain()[0])/normVal*100*100)/100 + '%</strong>)':'') + '<br>'
-            + '<strong>From: </strong>' + dateFormat(d.timeRange[0]) + '<br>'
-            + '<strong>To: </strong>' + dateFormat(d.timeRange[1]);
+          let result = '<strong>' + d.labelVal + ' </strong>';
+          
+          if (d.tooltipData !== undefined) {
+            for (const dat of d.tooltipData) {
+              const label = dat.label !== undefined ? `<strong>${dat.label}: </strong>` : '';
+              result += '<br>' + label + dat.value;
+            }
+          }
+
+            return result;
         });
 
       state.svg.call(state.segmentTooltip);
